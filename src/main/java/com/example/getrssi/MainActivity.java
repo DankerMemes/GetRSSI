@@ -102,6 +102,10 @@ public class MainActivity extends Activity {
         }
     }
 
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
@@ -166,7 +170,10 @@ public class MainActivity extends Activity {
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
-
+                if(name == "null"){
+                    BluetoothDevice dev =  intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    name = dev.getAddress();
+                }
                 BTDevice device = new BTDevice();
                 device.name = name;
                 device.rssi = rssi;
