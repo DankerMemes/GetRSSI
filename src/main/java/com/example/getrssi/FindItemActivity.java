@@ -31,6 +31,9 @@ public class FindItemActivity extends Activity {
     private BluetoothAdapter BTAdapter;
     private int discoveryStatus = 1;
     private int initialRssi;
+
+    private boolean isReceiverRegistered = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,9 +56,9 @@ public class FindItemActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Log.d(Tag, "Cancel Selection");
-                Intent cancelSearch = new Intent(getApplicationContext(), MainActivity.class);
-                cancelSearch.setAction("com.example.getrssi.CANCEL");
-                startActivity(cancelSearch);
+                Intent cancelSearch = new Intent(FindItemActivity.this, MainActivity.class);
+                setResult(RESULT_CANCELED, cancelSearch);
+                FindItemActivity.this.finish();
             }
         });
 
@@ -68,10 +71,21 @@ public class FindItemActivity extends Activity {
             }
         });
     }
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(receiver);
+
+//    protected void onPause() {
+//        super.onPause();
+//        unregisterReceiver(receiver);
+//    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (isReceiverRegistered) {
+            unregisterReceiver(receiver);
+        }
     }
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void checkBTPermissions() {
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
@@ -105,6 +119,7 @@ public class FindItemActivity extends Activity {
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(receiver, filter);
+        isReceiverRegistered = true;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkBTPermissions();

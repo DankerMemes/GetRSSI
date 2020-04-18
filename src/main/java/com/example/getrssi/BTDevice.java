@@ -17,7 +17,7 @@ public class BTDevice implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BTDevice device = (BTDevice) o;
-        return this.name.equals(device.name) && this.rssi == device.rssi;
+        return this.name.equals(device.name);
     }
 
     public String getName() {

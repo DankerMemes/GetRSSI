@@ -18,7 +18,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -26,14 +25,13 @@ import androidx.annotation.RequiresApi;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends Activity {
     private static final String TAG = "BluetoothRSSI";
 
     private static final int REQUEST_ENABLE_BT = 0;
     private static final int REQUEST_DISCOVER_BT = 1;
+    private static final int FIND_ITEM_ACTIVITY = 2;
 
     private BluetoothAdapter BTAdapter;
     private List<BTDevice> deviceList = new ArrayList<>();
@@ -41,7 +39,10 @@ public class MainActivity extends Activity {
     private Button btnEnableBT, btnStartDiscovery;
     private ListView listViewDevices;
     private ArrayAdapter<BTDevice> arrayAdapter;
+
     private int discoveryStatus = 0;
+    private boolean isReceiverRegistered = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,19 +94,17 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(getApplicationContext(), FindItemActivity.class);
                 intent.putExtra("deviceObj", (Serializable) selectedDevice);
                 BTAdapter.cancelDiscovery();
-                startActivity(intent);
+                startActivityForResult(intent, FIND_ITEM_ACTIVITY);
             }
         });
-        if (getIntent().getAction() == "com.example.getrssi.CANCEL"){
-            discoveryStatus = 1;
-            btnStartDiscovery.callOnClick();
-        }
     }
 
+    @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(receiver);
+//            unregisterReceiver(receiver);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
@@ -116,6 +115,15 @@ public class MainActivity extends Activity {
                 else {
                     // User declined to turn on Bluetooth
                     showToast("Could not turn on bluetooth");
+                }
+                break;
+
+            case FIND_ITEM_ACTIVITY:
+                if (resultCode == RESULT_OK) {
+                    // Do something
+                } else if (resultCode == RESULT_CANCELED) {
+                    discoveryStatus = 1;
+                    scanDevices();
                 }
                 break;
         }
@@ -138,6 +146,7 @@ public class MainActivity extends Activity {
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(receiver, filter);
+        isReceiverRegistered = true;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkBTPermissions();
@@ -170,7 +179,7 @@ public class MainActivity extends Activity {
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
-                if(name == "null"){
+                if(name == null){
                     BluetoothDevice dev =  intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     name = dev.getAddress();
                 }
@@ -183,9 +192,9 @@ public class MainActivity extends Activity {
                             Log.d(TAG, deviceList.toString());
                             arrayAdapter.notifyDataSetChanged();
                         }
-                else{
-                    deviceList.set(deviceList.indexOf(device), device);
-                }
+//                else{
+//                    deviceList.set(deviceList.indexOf(device), device);
+//                }
             }
         }
     };
@@ -194,7 +203,9 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
-        unregisterReceiver(receiver);
+        if (isReceiverRegistered) {
+            unregisterReceiver(receiver);
+        }
     }
 
     // HELPER FUNCTIONS
