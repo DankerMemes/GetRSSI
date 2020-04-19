@@ -21,7 +21,17 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-public class FindItemActivity extends Activity {
+import com.asus.robotframework.API.MotionControl;
+import com.asus.robotframework.API.RobotCallback;
+import com.asus.robotframework.API.RobotCmdState;
+import com.asus.robotframework.API.RobotErrorCode;
+import com.robot.asus.robotactivity.RobotActivity;
+
+import org.json.JSONObject;
+
+import java.util.Random;
+
+public class FindItemActivity extends RobotActivity {
     private static final int REQUEST_DISCOVER_BT = 1;
 
     String Tag = "BluetoothRSSISearch";
@@ -31,9 +41,9 @@ public class FindItemActivity extends Activity {
     private BluetoothAdapter BTAdapter;
     private int discoveryStatus = 1;
     private int initialRssi;
-
+    private String selectedDevName;
     private boolean isReceiverRegistered = false;
-
+    private int previousStrength = initialRssi;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +54,7 @@ public class FindItemActivity extends Activity {
 
         Intent intent = getIntent();
         BTDevice deviceObj = (BTDevice)intent.getSerializableExtra("deviceObj");
+        selectedDevName = deviceObj.getName();
         devName = (TextView)findViewById(R.id.deviceName1);
         devName.setText(deviceObj.getName());
         rssiVal = (TextView)findViewById(R.id.rssiValue);
@@ -130,7 +141,118 @@ public class FindItemActivity extends Activity {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(Tag, "received");
+            String action = intent.getAction();
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                Log.d(Tag, "Discovery started");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setVisibility(View.VISIBLE);
+                    }
+                });
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                Log.d(Tag, "Discovery finished");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setVisibility(View.GONE);
+                    }
+                });
+            }
+            else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
+                int updatedRSSI = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                if(name == null){
+                    BluetoothDevice dev =  intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    name = dev.getAddress();
+                }
+
+                if(name == selectedDevName){
+                    rssiVal.setText(updatedRSSI + " DBM");
+                    if(updatedRSSI < 50){
+                        robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
+                    }
+                    else
+                    {
+                        while (updatedRSSI > 50){
+                            MotionControl.SpeedLevel.Body level = MotionControl.SpeedLevel.Body.getBody(1);
+                            if (updatedRSSI > previousStrength) {
+                                int random = new Random().nextInt(2);
+                                switch (random) {
+                                    case 0:
+                                        robotAPI.motion.moveBody(0, 0, (float) 1.57, level);
+                                        break;
+                                    case 1:
+                                        robotAPI.motion.moveBody(0, 0, (float) -1.57, level);
+                                        break;
+                                }
+                                        robotAPI.motion.moveBody(0, 1, 0, level);
+                            }
+
+                            previousStrength = updatedRSSI;
+                            BTAdapter.cancelDiscovery();
+                            scanDevices();
+                        }
+                    }
+                }
+
+            }
         }
     };
+
+
+    public static RobotCallback robotCallback = new RobotCallback() {
+        @Override
+        public void onResult(int cmd, int serial, RobotErrorCode err_code, Bundle result) {
+            super.onResult(cmd, serial, err_code, result);
+        }
+
+        @Override
+        public void onStateChange(int cmd, int serial, RobotErrorCode err_code, RobotCmdState state) {
+            super.onStateChange(cmd, serial, err_code, state);
+        }
+
+        @Override
+        public void initComplete() {
+            super.initComplete();
+
+        }
+    };
+
+
+    public static RobotCallback.Listen robotListenCallback = new RobotCallback.Listen() {
+        @Override
+        public void onFinishRegister() {
+
+        }
+
+        @Override
+        public void onVoiceDetect(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onSpeakComplete(String s, String s1) {
+
+        }
+
+        @Override
+        public void onEventUserUtterance(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onResult(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onRetry(JSONObject jsonObject) {
+
+        }
+    };
+
+    public FindItemActivity(){
+        super(robotCallback, robotListenCallback);
+    }
 }
