@@ -22,11 +22,18 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import com.asus.robotframework.API.RobotCallback;
+import com.asus.robotframework.API.RobotCmdState;
+import com.asus.robotframework.API.RobotErrorCode;
+import com.robot.asus.robotactivity.RobotActivity;
+
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity {
+public class MainActivity extends RobotActivity {
     private static final String TAG = "BluetoothRSSI";
 
     private static final int REQUEST_ENABLE_BT = 0;
@@ -42,6 +49,61 @@ public class MainActivity extends Activity {
 
     private int discoveryStatus = 0;
     private boolean isReceiverRegistered = false;
+
+    public static RobotCallback robotCallback = new RobotCallback() {
+        @Override
+        public void onResult(int cmd, int serial, RobotErrorCode err_code, Bundle result) {
+            super.onResult(cmd, serial, err_code, result);
+        }
+
+        @Override
+        public void onStateChange(int cmd, int serial, RobotErrorCode err_code, RobotCmdState state) {
+            super.onStateChange(cmd, serial, err_code, state);
+        }
+
+        @Override
+        public void initComplete() {
+            super.initComplete();
+
+        }
+    };
+
+
+    public static RobotCallback.Listen robotListenCallback = new RobotCallback.Listen() {
+        @Override
+        public void onFinishRegister() {
+
+        }
+
+        @Override
+        public void onVoiceDetect(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onSpeakComplete(String s, String s1) {
+
+        }
+
+        @Override
+        public void onEventUserUtterance(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onResult(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onRetry(JSONObject jsonObject) {
+
+        }
+    };
+
+    public MainActivity() {
+        super(robotCallback, robotListenCallback);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

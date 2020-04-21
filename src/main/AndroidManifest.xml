@@ -16,9 +16,12 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <category android:name="com.asus.intent.category.ZENBO" />
+                <category android:name="com.asus.intent.category.ZENBO_LAUNCHER" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <data android:name="com.asus.intent.data.MIN_ROBOT_API_LEVEL.1" />
                 <action android:name="com.example.getrssi.CANCEL" />
+
             </intent-filter>
         </activity>
         <activity android:name=".FindItemActivity">

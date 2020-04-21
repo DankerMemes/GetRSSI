@@ -44,6 +44,63 @@ public class FindItemActivity extends RobotActivity {
     private String selectedDevName;
     private boolean isReceiverRegistered = false;
     private int previousStrength = initialRssi;
+
+    public static RobotCallback robotCallback = new RobotCallback() {
+        @Override
+        public void onResult(int cmd, int serial, RobotErrorCode err_code, Bundle result) {
+            super.onResult(cmd, serial, err_code, result);
+        }
+
+        @Override
+        public void onStateChange(int cmd, int serial, RobotErrorCode err_code, RobotCmdState state) {
+            super.onStateChange(cmd, serial, err_code, state);
+        }
+
+        @Override
+        public void initComplete() {
+            super.initComplete();
+
+        }
+    };
+
+
+    public static RobotCallback.Listen robotListenCallback = new RobotCallback.Listen() {
+        @Override
+        public void onFinishRegister() {
+
+        }
+
+        @Override
+        public void onVoiceDetect(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onSpeakComplete(String s, String s1) {
+
+        }
+
+        @Override
+        public void onEventUserUtterance(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onResult(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onRetry(JSONObject jsonObject) {
+
+        }
+    };
+
+    public FindItemActivity(){
+        super(robotCallback, robotListenCallback);
+    }
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +141,7 @@ public class FindItemActivity extends RobotActivity {
                         spinner.setVisibility(View.VISIBLE);
                     }
                 });
+                robotAPI.robot.speak("zenbo will attempt to find this item");
                 scanDevices();
             }
         });
@@ -162,6 +220,7 @@ public class FindItemActivity extends RobotActivity {
                 }
 
                 if(name == selectedDevName){
+                    robotAPI.robot.speak("zenbo has discovered " + selectedDevName + " again");
                     rssiVal.setText(updatedRSSI + " DBM");
                     if(updatedRSSI > -50){
                         robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
@@ -175,19 +234,22 @@ public class FindItemActivity extends RobotActivity {
                     else
                     {
                         while (updatedRSSI < -50){
+                            robotAPI.robot.speak("rssi is less than -50");
                             if (updatedRSSI <= previousStrength) {
                                 int random = new Random().nextInt(2);
                                 switch (random) {
                                     case 0:
+                                        robotAPI.robot.speak("turn right");
                                         robotAPI.motion.moveBody(0, 0, (float) 1.57);
                                         break;
                                     case 1:
+                                        robotAPI.robot.speak("turn left");
                                         robotAPI.motion.moveBody(0, 0, (float) -1.57);
                                         break;
                                 }
-                                        robotAPI.motion.moveBody(0, 1, 0);
                             }
-
+                            robotAPI.robot.speak("move 1m forward");
+                            robotAPI.motion.moveBody(0, 1, 0);
                             previousStrength = updatedRSSI;
                             BTAdapter.cancelDiscovery();
                             scanDevices();
@@ -199,59 +261,4 @@ public class FindItemActivity extends RobotActivity {
         }
     };
 
-
-    public static RobotCallback robotCallback = new RobotCallback() {
-        @Override
-        public void onResult(int cmd, int serial, RobotErrorCode err_code, Bundle result) {
-            super.onResult(cmd, serial, err_code, result);
-        }
-
-        @Override
-        public void onStateChange(int cmd, int serial, RobotErrorCode err_code, RobotCmdState state) {
-            super.onStateChange(cmd, serial, err_code, state);
-        }
-
-        @Override
-        public void initComplete() {
-            super.initComplete();
-
-        }
-    };
-
-
-    public static RobotCallback.Listen robotListenCallback = new RobotCallback.Listen() {
-        @Override
-        public void onFinishRegister() {
-
-        }
-
-        @Override
-        public void onVoiceDetect(JSONObject jsonObject) {
-
-        }
-
-        @Override
-        public void onSpeakComplete(String s, String s1) {
-
-        }
-
-        @Override
-        public void onEventUserUtterance(JSONObject jsonObject) {
-
-        }
-
-        @Override
-        public void onResult(JSONObject jsonObject) {
-
-        }
-
-        @Override
-        public void onRetry(JSONObject jsonObject) {
-
-        }
-    };
-
-    public FindItemActivity(){
-        super(robotCallback, robotListenCallback);
-    }
 }
