@@ -78,6 +78,12 @@ public class FindItemActivity extends RobotActivity {
             @Override
             public void onClick(View v) {
                 Log.d(Tag, "Finding Item");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setVisibility(View.VISIBLE);
+                    }
+                });
                 scanDevices();
             }
         });
@@ -144,20 +150,8 @@ public class FindItemActivity extends RobotActivity {
             String action = intent.getAction();
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 Log.d(Tag, "Discovery started");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setVisibility(View.VISIBLE);
-                    }
-                });
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(Tag, "Discovery finished");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setVisibility(View.GONE);
-                    }
-                });
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
@@ -169,24 +163,29 @@ public class FindItemActivity extends RobotActivity {
 
                 if(name == selectedDevName){
                     rssiVal.setText(updatedRSSI + " DBM");
-                    if(updatedRSSI < 50){
+                    if(updatedRSSI > -50){
                         robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                spinner.setVisibility(View.GONE);
+                            }
+                        });
                     }
                     else
                     {
-                        while (updatedRSSI > 50){
-                            MotionControl.SpeedLevel.Body level = MotionControl.SpeedLevel.Body.getBody(1);
-                            if (updatedRSSI > previousStrength) {
+                        while (updatedRSSI < -50){
+                            if (updatedRSSI <= previousStrength) {
                                 int random = new Random().nextInt(2);
                                 switch (random) {
                                     case 0:
-                                        robotAPI.motion.moveBody(0, 0, (float) 1.57, level);
+                                        robotAPI.motion.moveBody(0, 0, (float) 1.57);
                                         break;
                                     case 1:
-                                        robotAPI.motion.moveBody(0, 0, (float) -1.57, level);
+                                        robotAPI.motion.moveBody(0, 0, (float) -1.57);
                                         break;
                                 }
-                                        robotAPI.motion.moveBody(0, 1, 0, level);
+                                        robotAPI.motion.moveBody(0, 1, 0);
                             }
 
                             previousStrength = updatedRSSI;
