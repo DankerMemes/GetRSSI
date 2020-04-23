@@ -219,8 +219,8 @@ public class FindItemActivity extends RobotActivity {
                     name = dev.getAddress();
                 }
 
-                if(name == selectedDevName){
-                    robotAPI.robot.speak("zenbo has discovered " + selectedDevName + " again");
+                if(name.equals(selectedDevName)){
+                    robotAPI.robot.speak("zenbo has discovered " + name + " again");
                     rssiVal.setText(updatedRSSI + " DBM");
                     if(updatedRSSI > -50){
                         robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
@@ -230,6 +230,7 @@ public class FindItemActivity extends RobotActivity {
                                 spinner.setVisibility(View.GONE);
                             }
                         });
+                        BTAdapter.cancelDiscovery();
                     }
                     else
                     {

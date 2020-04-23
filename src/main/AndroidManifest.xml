@@ -16,6 +16,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.asus.intent.category.ZENBO" />
                 <category android:name="com.asus.intent.category.ZENBO_LAUNCHER" />
                 <category android:name="android.intent.category.LAUNCHER" />

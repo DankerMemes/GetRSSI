@@ -168,6 +168,12 @@ public class MainActivity extends RobotActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        robotAPI.robot.speak("welcome to zenbo");
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
             case REQUEST_ENABLE_BT:
