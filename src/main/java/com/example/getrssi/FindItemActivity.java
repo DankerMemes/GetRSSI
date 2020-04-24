@@ -39,11 +39,11 @@ public class FindItemActivity extends RobotActivity {
     private Button btnCancel, btnFindItem;
     private TextView devName, rssiVal;
     private BluetoothAdapter BTAdapter;
-    private int discoveryStatus = 1;
+    //    private int discoveryStatus = 1;
     private int initialRssi;
     private String selectedDevName;
     private boolean isReceiverRegistered = false;
-    private int previousStrength = initialRssi;
+    private int previousStrength;
 
     public static RobotCallback robotCallback = new RobotCallback() {
         @Override
@@ -117,12 +117,15 @@ public class FindItemActivity extends RobotActivity {
         rssiVal = (TextView)findViewById(R.id.rssiValue);
         String rssi = String.valueOf(deviceObj.getRssi());
         initialRssi = deviceObj.getRssi();
+        previousStrength = initialRssi;
         rssiVal.setText(rssi + " DBM");
 
         btnCancel = (Button)findViewById(R.id.cancel);
         btnCancel.setOnClickListener(new OnClickListener(){
             @Override
             public void onClick(View v) {
+                BTAdapter.cancelDiscovery();
+                spinner.setVisibility(View.GONE);
                 Log.d(Tag, "Cancel Selection");
                 Intent cancelSearch = new Intent(FindItemActivity.this, MainActivity.class);
                 setResult(RESULT_CANCELED, cancelSearch);
@@ -135,13 +138,16 @@ public class FindItemActivity extends RobotActivity {
             @Override
             public void onClick(View v) {
                 Log.d(Tag, "Finding Item");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setVisibility(View.VISIBLE);
-                    }
-                });
-                robotAPI.robot.speak("zenbo will attempt to find this item");
+                spinner.setVisibility(View.VISIBLE);
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        spinner.setVisibility(View.VISIBLE);
+//                    }
+//                });
+                robotAPI.robot.speak("zenbo will follow you and attempt to detect this device");
+//                robotAPI.motion.moveBody( 0, (float) 1, 0);
+                robotAPI.utility.followUser();
                 scanDevices();
             }
         });
@@ -181,24 +187,23 @@ public class FindItemActivity extends RobotActivity {
 
     public void scanDevices(){
         // Make device discoverable
-        if (!BTAdapter.isDiscovering() && discoveryStatus == 0){
+        if (!BTAdapter.isDiscovering()) {
             showToast("Making Your Device Discoverable");
             Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 5);
             startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
-            discoveryStatus = 1;
+//            discoveryStatus = 1;
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(receiver, filter);
-        isReceiverRegistered = true;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            checkBTPermissions();
+        if (!isReceiverRegistered) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(BluetoothDevice.ACTION_FOUND);
+            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            registerReceiver(receiver, filter);
+            isReceiverRegistered = true;
         }
+
         BTAdapter.startDiscovery();
     }
 
@@ -214,7 +219,7 @@ public class FindItemActivity extends RobotActivity {
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
                 int updatedRSSI = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
-                if(name == null){
+                if (name == null){
                     BluetoothDevice dev =  intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     name = dev.getAddress();
                 }
@@ -224,42 +229,40 @@ public class FindItemActivity extends RobotActivity {
                     rssiVal.setText(updatedRSSI + " DBM");
                     if(updatedRSSI > -50){
                         robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                spinner.setVisibility(View.GONE);
-                            }
-                        });
+                        spinner.setVisibility(View.GONE);
                         BTAdapter.cancelDiscovery();
+                        robotAPI.motion.stopMoving();
                     }
-                    else
-                    {
-                        while (updatedRSSI < -50){
-                            robotAPI.robot.speak("rssi is less than -50");
-                            if (updatedRSSI <= previousStrength) {
-                                int random = new Random().nextInt(2);
-                                switch (random) {
-                                    case 0:
-                                        robotAPI.robot.speak("turn right");
-                                        robotAPI.motion.moveBody(0, 0, (float) 1.57);
-                                        break;
-                                    case 1:
-                                        robotAPI.robot.speak("turn left");
-                                        robotAPI.motion.moveBody(0, 0, (float) -1.57);
-                                        break;
-                                }
-                            }
-                            robotAPI.robot.speak("move 1m forward");
-                            robotAPI.motion.moveBody(0, 1, 0);
-                            previousStrength = updatedRSSI;
-                            BTAdapter.cancelDiscovery();
-                            scanDevices();
-                        }
+//                    else
+//                    {
+//                        robotAPI.robot.speak("rssi is less than -50");
+//                        if (updatedRSSI <= previousStrength) {
+//                            int random = new Random().nextInt(2);
+//                            switch (random) {
+//                                case 0:
+//                                    robotAPI.robot.speak("turn right");
+//                                    robotAPI.motion.moveBody(0.0f, 0.0f, 1.57f);
+//                                    break;
+//                                case 1:
+//                                    robotAPI.robot.speak("turn left");
+//                                    robotAPI.motion.moveBody(0.0f, 0.0f,  -1.57f);
+//                                    break;
+//                            }
+//                        } else {
+//                            robotAPI.robot.speak("rssi more than previous");
+//                            showToast("rssi more than previous");
+//                        }
+//                        robotAPI.robot.speak("move 1m forward");
+//                        robotAPI.motion.moveBody( 1.0f,  0.0f, 0.0f);
+                        previousStrength = updatedRSSI;
+                        BTAdapter.cancelDiscovery();
+                        BTAdapter.startDiscovery();
+//                        scanDevices();
                     }
                 }
 
             }
-        }
+//        }
     };
 
 }

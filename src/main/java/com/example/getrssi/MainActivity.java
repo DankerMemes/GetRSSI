@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import com.asus.robotframework.API.RobotAPI;
 import com.asus.robotframework.API.RobotCallback;
 import com.asus.robotframework.API.RobotCmdState;
 import com.asus.robotframework.API.RobotErrorCode;
@@ -47,13 +48,14 @@ public class MainActivity extends RobotActivity {
     private ListView listViewDevices;
     private ArrayAdapter<BTDevice> arrayAdapter;
 
-    private int discoveryStatus = 0;
+    //    private int discoveryStatus = 0;
     private boolean isReceiverRegistered = false;
+    private boolean isMainActivityActive = false;
 
     public static RobotCallback robotCallback = new RobotCallback() {
         @Override
         public void onResult(int cmd, int serial, RobotErrorCode err_code, Bundle result) {
-            super.onResult(cmd, serial, err_code, result);
+            super.onResult(cmd, serial, err_code, result);;
         }
 
         @Override
@@ -109,6 +111,8 @@ public class MainActivity extends RobotActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        isMainActivityActive = true;
+
         spinner =(ProgressBar)findViewById(R.id.progressBar);
         spinner.setVisibility(View.GONE);
         // Set BT adapter
@@ -156,6 +160,7 @@ public class MainActivity extends RobotActivity {
                 Intent intent = new Intent(getApplicationContext(), FindItemActivity.class);
                 intent.putExtra("deviceObj", (Serializable) selectedDevice);
                 BTAdapter.cancelDiscovery();
+                isMainActivityActive = false;
                 startActivityForResult(intent, FIND_ITEM_ACTIVITY);
             }
         });
@@ -164,12 +169,17 @@ public class MainActivity extends RobotActivity {
     @Override
     protected void onPause() {
         super.onPause();
-//            unregisterReceiver(receiver);
+
+        if (isReceiverRegistered && !isMainActivityActive) {
+            unregisterReceiver(receiver);
+            isReceiverRegistered = false;
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        //robotAPI.motion.moveBody(1.5f, 0.0f, 0.0f);
         robotAPI.robot.speak("welcome to zenbo");
     }
 
@@ -187,10 +197,10 @@ public class MainActivity extends RobotActivity {
                 break;
 
             case FIND_ITEM_ACTIVITY:
+                isMainActivityActive = true;
                 if (resultCode == RESULT_OK) {
                     // Do something
                 } else if (resultCode == RESULT_CANCELED) {
-                    discoveryStatus = 1;
                     scanDevices();
                 }
                 break;
@@ -201,48 +211,52 @@ public class MainActivity extends RobotActivity {
 
     public void scanDevices(){
         // Make device discoverable
-        if (!BTAdapter.isDiscovering() && discoveryStatus == 0){
+        if (!BTAdapter.isDiscovering()){
             showToast("Making Your Device Discoverable");
             Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 5);
             startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
-            discoveryStatus = 1;
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(receiver, filter);
-        isReceiverRegistered = true;
+        if (!isReceiverRegistered) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(BluetoothDevice.ACTION_FOUND);
+            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            registerReceiver(receiver, filter);
+            isReceiverRegistered = true;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            checkBTPermissions();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                checkBTPermissions();
+            }
         }
         BTAdapter.startDiscovery();
     }
+
     private final BroadcastReceiver receiver = new BroadcastReceiver(){
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 Log.d(TAG, "Discovery started");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setVisibility(View.VISIBLE);
-                    }
-                });
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        spinner.setVisibility(View.VISIBLE);
+//                    }
+//                });
+                spinner.setVisibility(View.VISIBLE);
                 deviceList.clear();
                 arrayAdapter.notifyDataSetChanged();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(TAG, "Discovery finished");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setVisibility(View.GONE);
-                    }
-                });
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        spinner.setVisibility(View.GONE);
+//                    }
+//                });
+                spinner.setVisibility(View.GONE);
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
@@ -256,10 +270,10 @@ public class MainActivity extends RobotActivity {
                 device.rssi = rssi;
 
                 if (!deviceList.contains(device)) {
-                            deviceList.add(device);
-                            Log.d(TAG, deviceList.toString());
-                            arrayAdapter.notifyDataSetChanged();
-                        }
+                    deviceList.add(device);
+                    Log.d(TAG, deviceList.toString());
+                    arrayAdapter.notifyDataSetChanged();
+                }
 //                else{
 //                    deviceList.set(deviceList.indexOf(device), device);
 //                }
@@ -273,6 +287,7 @@ public class MainActivity extends RobotActivity {
 
         if (isReceiverRegistered) {
             unregisterReceiver(receiver);
+            isReceiverRegistered = false;
         }
     }
 
