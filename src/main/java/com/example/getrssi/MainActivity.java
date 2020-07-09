@@ -209,6 +209,8 @@ public class MainActivity extends RobotActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+
+
     public void scanDevices(){
         // Make device discoverable
         if (!BTAdapter.isDiscovering()){
@@ -233,29 +235,23 @@ public class MainActivity extends RobotActivity {
         BTAdapter.startDiscovery();
     }
 
+
+
+
+
+
+
     private final BroadcastReceiver receiver = new BroadcastReceiver(){
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 Log.d(TAG, "Discovery started");
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        spinner.setVisibility(View.VISIBLE);
-//                    }
-//                });
                 spinner.setVisibility(View.VISIBLE);
                 deviceList.clear();
                 arrayAdapter.notifyDataSetChanged();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(TAG, "Discovery finished");
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        spinner.setVisibility(View.GONE);
-//                    }
-//                });
                 spinner.setVisibility(View.GONE);
             }
             else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -274,12 +270,12 @@ public class MainActivity extends RobotActivity {
                     Log.d(TAG, deviceList.toString());
                     arrayAdapter.notifyDataSetChanged();
                 }
-//                else{
-//                    deviceList.set(deviceList.indexOf(device), device);
-//                }
             }
         }
     };
+
+
+
 
     @Override
     protected void onDestroy() {

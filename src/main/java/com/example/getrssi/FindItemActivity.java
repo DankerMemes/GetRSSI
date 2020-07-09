@@ -138,15 +138,7 @@ public class FindItemActivity extends RobotActivity {
             @Override
             public void onClick(View v) {
                 Log.d(Tag, "Finding Item");
-                spinner.setVisibility(View.VISIBLE);
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        spinner.setVisibility(View.VISIBLE);
-//                    }
-//                });
                 robotAPI.robot.speak("zenbo will follow you and attempt to detect this device");
-//                robotAPI.motion.moveBody( 0, (float) 1, 0);
                 robotAPI.utility.followUser();
                 scanDevices();
             }
@@ -224,41 +216,18 @@ public class FindItemActivity extends RobotActivity {
                     name = dev.getAddress();
                 }
 
-                if(name.equals(selectedDevName)){
-                    robotAPI.robot.speak("zenbo has discovered " + name + " again");
+                if(name.equals(selectedDevName)) {
                     rssiVal.setText(updatedRSSI + " DBM");
-                    if(updatedRSSI > -50){
+                    if (updatedRSSI > -50) {
                         robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
                         spinner.setVisibility(View.GONE);
                         BTAdapter.cancelDiscovery();
                         robotAPI.motion.stopMoving();
-                    }
-//                    else
-//                    {
-//                        robotAPI.robot.speak("rssi is less than -50");
-//                        if (updatedRSSI <= previousStrength) {
-//                            int random = new Random().nextInt(2);
-//                            switch (random) {
-//                                case 0:
-//                                    robotAPI.robot.speak("turn right");
-//                                    robotAPI.motion.moveBody(0.0f, 0.0f, 1.57f);
-//                                    break;
-//                                case 1:
-//                                    robotAPI.robot.speak("turn left");
-//                                    robotAPI.motion.moveBody(0.0f, 0.0f,  -1.57f);
-//                                    break;
-//                            }
-//                        } else {
-//                            robotAPI.robot.speak("rssi more than previous");
-//                            showToast("rssi more than previous");
-//                        }
-//                        robotAPI.robot.speak("move 1m forward");
-//                        robotAPI.motion.moveBody( 1.0f,  0.0f, 0.0f);
-                        previousStrength = updatedRSSI;
+                    } else {
                         BTAdapter.cancelDiscovery();
                         BTAdapter.startDiscovery();
-//                        scanDevices();
                     }
+                }
                 }
 
             }
