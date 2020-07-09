@@ -44,7 +44,7 @@ public class FindItemActivity extends RobotActivity {
     private String selectedDevName;
     private boolean isReceiverRegistered = false;
     private int previousStrength;
-
+    private int followCommandSerialNumber;
     public static RobotCallback robotCallback = new RobotCallback() {
         @Override
         public void onResult(int cmd, int serial, RobotErrorCode err_code, Bundle result) {
@@ -139,7 +139,7 @@ public class FindItemActivity extends RobotActivity {
             public void onClick(View v) {
                 Log.d(Tag, "Finding Item");
                 robotAPI.robot.speak("zenbo will follow you and attempt to detect this device");
-                robotAPI.utility.followUser();
+                followCommandSerialNumber = robotAPI.utility.followUser();
                 scanDevices();
             }
         });
@@ -222,7 +222,7 @@ public class FindItemActivity extends RobotActivity {
                         robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
                         spinner.setVisibility(View.GONE);
                         BTAdapter.cancelDiscovery();
-                        robotAPI.motion.stopMoving();
+                        robotAPI.cancelCommandBySerial(followCommandSerialNumber);
                     } else {
                         BTAdapter.cancelDiscovery();
                         BTAdapter.startDiscovery();
