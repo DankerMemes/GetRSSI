@@ -26,6 +26,7 @@ import com.asus.robotframework.API.RobotAPI;
 import com.asus.robotframework.API.RobotCallback;
 import com.asus.robotframework.API.RobotCmdState;
 import com.asus.robotframework.API.RobotErrorCode;
+import com.asus.robotframework.API.RobotFace;
 import com.robot.asus.robotactivity.RobotActivity;
 
 import org.json.JSONObject;
@@ -179,6 +180,7 @@ public class MainActivity extends RobotActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        robotAPI.robot.setExpression(RobotFace.HIDEFACE);
         //robotAPI.motion.moveBody(1.5f, 0.0f, 0.0f);
         robotAPI.robot.speak("welcome to zenbo");
     }
