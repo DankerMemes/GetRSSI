@@ -111,12 +111,12 @@ public class FindItemActivity extends RobotActivity {
 
         Intent intent = getIntent();
         BTDevice deviceObj = (BTDevice)intent.getSerializableExtra("deviceObj");
-        selectedDevName = deviceObj.getName();
+        selectedDevName = deviceObj.name;
         devName = (TextView)findViewById(R.id.deviceName1);
-        devName.setText(deviceObj.getName());
+        devName.setText(deviceObj.name);
         rssiVal = (TextView)findViewById(R.id.rssiValue);
-        String rssi = String.valueOf(deviceObj.getRssi());
-        initialRssi = deviceObj.getRssi();
+        String rssi = String.valueOf(deviceObj.rssi);
+        initialRssi = deviceObj.rssi;
         previousStrength = initialRssi;
         rssiVal.setText(rssi + " DBM");
 

@@ -1,16 +1,18 @@
 package com.example.getrssi;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 import java.io.Serializable;
 
 public class BTDevice implements Serializable {
     public String name;
+    public String assignedName;
     public int rssi;
 
     @Override
+    @NonNull
     public String toString() {
-        return this.name + " => " + this.rssi + "dBm";
+        return (this.assignedName != null ? this.assignedName : this.name) + " => " + this.rssi + "dBm";
     }
 
     public boolean equals(Object o) {
@@ -18,13 +20,5 @@ public class BTDevice implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         BTDevice device = (BTDevice) o;
         return this.name.equals(device.name);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getRssi() {
-        return rssi;
     }
 }

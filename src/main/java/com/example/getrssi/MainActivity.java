@@ -44,7 +44,7 @@ public class MainActivity extends RobotActivity {
     private BluetoothAdapter BTAdapter;
     private List<BTDevice> deviceList = new ArrayList<>();
     ProgressBar spinner;
-    private Button btnEnableBT, btnStartDiscovery;
+    private Button btnEnableBT, btnStartDiscovery, btnItemList, btnRegisterItem;
     private ListView listViewDevices;
     private ArrayAdapter<BTDevice> arrayAdapter;
 
@@ -111,205 +111,23 @@ public class MainActivity extends RobotActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        isMainActivityActive = true;
+//        isMainActivityActive = true;
 
-        spinner =(ProgressBar)findViewById(R.id.progressBar);
-        spinner.setVisibility(View.GONE);
-        // Set BT adapter
-        BTAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        if (BTAdapter == null) {
-            showToast("Bluetooth is not available");
-        } else {
-            showToast("Bluetooth is available");
-        }
-
-
-
-        btnEnableBT = (Button) findViewById(R.id.btn_turn_on_bluetooth);
-        btnEnableBT.setOnClickListener(new OnClickListener(){
-            public void onClick(View v) {
-                // Turn on Bluetooth if not enabled
-                if (!BTAdapter.isEnabled()) {
-                    showToast("Turning on Bluetooth...");
-
-                    // Intent to turn on Bluetooth
-                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-                } else {
-                    showToast("Bluetooth is on");
-                }
-            }
-        });
-
-        btnStartDiscovery = findViewById(R.id.btn_start_discovery);
-        btnStartDiscovery.setOnClickListener(new OnClickListener() {
+        btnItemList = findViewById(R.id.btn_item_list);
+        btnItemList.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                scanDevices();
+
             }
         });
 
-        listViewDevices = findViewById(R.id.listview_devices);
-        arrayAdapter = new DeviceListAdapter(this, R.layout.device_item, deviceList);
-        listViewDevices.setAdapter(arrayAdapter);
-        listViewDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        btnRegisterItem = findViewById(R.id.btn_register_new_item);
+        btnRegisterItem.setOnClickListener(new OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Object selectedDevice =  listViewDevices.getItemAtPosition(position);
-                Intent intent = new Intent(getApplicationContext(), FindItemActivity.class);
-                intent.putExtra("deviceObj", (Serializable) selectedDevice);
-                BTAdapter.cancelDiscovery();
-                isMainActivityActive = false;
-                startActivityForResult(intent, FIND_ITEM_ACTIVITY);
+            public void onClick(View v) {
+                Intent registerIntent = new Intent(getApplicationContext(), RegisterNewItemActivity.class);
+                startActivity(registerIntent);
             }
         });
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (isReceiverRegistered && !isMainActivityActive) {
-            unregisterReceiver(receiver);
-            isReceiverRegistered = false;
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //robotAPI.motion.moveBody(1.5f, 0.0f, 0.0f);
-        robotAPI.robot.speak("welcome to zenbo");
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode){
-            case REQUEST_ENABLE_BT:
-                if (resultCode == RESULT_OK) {
-                    showToast("Bluetooth is on");
-                }
-                else {
-                    // User declined to turn on Bluetooth
-                    showToast("Could not turn on bluetooth");
-                }
-                break;
-
-            case FIND_ITEM_ACTIVITY:
-                isMainActivityActive = true;
-                if (resultCode == RESULT_OK) {
-                    // Do something
-                } else if (resultCode == RESULT_CANCELED) {
-                    scanDevices();
-                }
-                break;
-        }
-
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-
-
-    public void scanDevices(){
-        // Make device discoverable
-        if (!BTAdapter.isDiscovering()){
-            showToast("Making Your Device Discoverable");
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 5);
-            startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
-        }
-
-        if (!isReceiverRegistered) {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(BluetoothDevice.ACTION_FOUND);
-            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-            registerReceiver(receiver, filter);
-            isReceiverRegistered = true;
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                checkBTPermissions();
-            }
-        }
-        BTAdapter.startDiscovery();
-    }
-
-
-
-
-
-
-
-    private final BroadcastReceiver receiver = new BroadcastReceiver(){
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                Log.d(TAG, "Discovery started");
-                spinner.setVisibility(View.VISIBLE);
-                deviceList.clear();
-                arrayAdapter.notifyDataSetChanged();
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.d(TAG, "Discovery finished");
-                spinner.setVisibility(View.GONE);
-            }
-            else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
-                String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
-                if(name == null){
-                    BluetoothDevice dev =  intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    name = dev.getAddress();
-                }
-                BTDevice device = new BTDevice();
-                device.name = name;
-                device.rssi = rssi;
-
-                if (!deviceList.contains(device)) {
-                    deviceList.add(device);
-                    Log.d(TAG, deviceList.toString());
-                    arrayAdapter.notifyDataSetChanged();
-                }
-            }
-        }
-    };
-
-
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if (isReceiverRegistered) {
-            unregisterReceiver(receiver);
-            isReceiverRegistered = false;
-        }
-    }
-
-    // HELPER FUNCTIONS
-    private void showToast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
-
-    /**
-     * This method is required for all devices running API23+
-     * Android must programmatically check the permissions for bluetooth. Putting the proper permissions
-     * in the manifest is not enough.
-     *
-     * NOTE: This will only execute on versions > LOLLIPOP because it is not needed otherwise.
-     */
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void checkBTPermissions() {
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
-            int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
-            permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
-            if (permissionCheck != 0) {
-
-                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number
-            }
-        }else{
-            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
-        }
     }
 }
