@@ -207,31 +207,41 @@ public class FindItemActivity extends RobotActivity {
                 Log.d(Tag, "Discovery started");
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(Tag, "Discovery finished");
-            }
-            else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
                 int updatedRSSI = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
-                if (name == null){
-                    BluetoothDevice dev =  intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (name == null) {
+                    BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     name = dev.getAddress();
                 }
 
-                if(name.equals(selectedDevName)) {
+                if (name.equals(selectedDevName)) {
                     rssiVal.setText(updatedRSSI + " DBM");
-                    if (updatedRSSI > -50) {
-                        robotAPI.robot.speak("The Device with the name or address " + name + " is approximately within 1 meter of Zenbo");
-                        spinner.setVisibility(View.GONE);
-                        BTAdapter.cancelDiscovery();
-                        robotAPI.cancelCommandBySerial(followCommandSerialNumber);
-                    } else {
+                    if (updatedRSSI < -50) {
+                        robotAPI.robot.speak("rssi is less than -50");
+                        if (updatedRSSI <= previousStrength) {
+                            int random = new Random().nextInt(2);
+                            switch (random) {
+                                case 0:
+                                    robotAPI.motion.moveBody(0, 0, (float) 1.57);
+                                    break;
+                                case 1:
+                                    robotAPI.motion.moveBody(0, 0, (float) -1.57);
+                                    break;
+                            }
+                        }
+                        robotAPI.robot.speak("move 1m forward");
+                        robotAPI.motion.moveBody(0, 1, 0);
+                        previousStrength = updatedRSSI;
                         BTAdapter.cancelDiscovery();
                         BTAdapter.startDiscovery();
+                    } else {
+                        robotAPI.robot.speak("in 1m range");
                     }
-                }
                 }
 
             }
 //        }
+        }
     };
-
 }
