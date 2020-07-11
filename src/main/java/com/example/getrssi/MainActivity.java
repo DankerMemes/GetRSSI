@@ -26,6 +26,7 @@ import com.asus.robotframework.API.RobotAPI;
 import com.asus.robotframework.API.RobotCallback;
 import com.asus.robotframework.API.RobotCmdState;
 import com.asus.robotframework.API.RobotErrorCode;
+import com.asus.robotframework.API.RobotFace;
 import com.robot.asus.robotactivity.RobotActivity;
 
 import org.json.JSONObject;
