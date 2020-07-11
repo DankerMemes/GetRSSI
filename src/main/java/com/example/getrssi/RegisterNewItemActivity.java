@@ -19,7 +19,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.Serializable;
@@ -58,7 +57,7 @@ public class RegisterNewItemActivity extends AppCompatActivity {
             }
         });
 
-        final ListView listViewDiscoveredItems = findViewById(R.id.listview_discovered_items);
+        final ListView listViewDiscoveredItems = findViewById(R.id.listview_registered_items);
         arrayAdapter = new DeviceListAdapter(this, R.layout.device_item, deviceList);
         listViewDiscoveredItems.setAdapter(arrayAdapter);
         listViewDiscoveredItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {

@@ -6,13 +6,13 @@ import java.io.Serializable;
 
 public class BTDevice implements Serializable {
     public String name;
-    public String assignedName;
+    public String registeredName;
     public int rssi;
 
     @Override
     @NonNull
     public String toString() {
-        return (this.assignedName != null ? this.assignedName : this.name) + " => " + this.rssi + "dBm";
+        return (this.registeredName != null ? this.registeredName : this.name) /*+ " => " + this.rssi + "dBm"*/;
     }
 
     public boolean equals(Object o) {

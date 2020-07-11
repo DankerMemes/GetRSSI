@@ -117,7 +117,8 @@ public class MainActivity extends RobotActivity {
         btnItemList.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent itemListIntent = new Intent(getApplicationContext(), RegisteredItemsActivity.class);
+                startActivity(itemListIntent);
             }
         });
 
