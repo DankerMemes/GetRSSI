@@ -24,7 +24,7 @@ public class DialogRegisterNew extends DialogFragment {
         View view = inflater.inflate(R.layout.dialog_register_new, container, false);
 
         BTDevice item = (BTDevice) getArguments().getSerializable("itemObj");
-        Log.d(TAG, item.name + item.rssi);
+        Log.d(TAG, item.assignedName + item.rssi);
 
         editTextItemName = view.findViewById(R.id.edittext_personal_item_name);
         btnSaveItem = view.findViewById(R.id.btn_save_item);

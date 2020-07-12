@@ -1,7 +1,6 @@
 package com.example.getrssi;
 
 import android.Manifest;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -21,7 +20,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.asus.robotframework.API.MotionControl;
 import com.asus.robotframework.API.RobotCallback;
 import com.asus.robotframework.API.RobotCmdState;
 import com.asus.robotframework.API.RobotErrorCode;
@@ -29,8 +27,6 @@ import com.asus.robotframework.API.RobotFace;
 import com.robot.asus.robotactivity.RobotActivity;
 
 import org.json.JSONObject;
-
-import java.util.Random;
 
 public class FindItemActivity extends RobotActivity {
     private static final int REQUEST_DISCOVER_BT = 1;
@@ -112,9 +108,9 @@ public class FindItemActivity extends RobotActivity {
 
         Intent intent = getIntent();
         BTDevice deviceObj = (BTDevice)intent.getSerializableExtra("deviceObj");
-        selectedDevName = deviceObj.name;
+        selectedDevName = deviceObj.assignedName;
         devName = (TextView)findViewById(R.id.deviceName1);
-        devName.setText(deviceObj.name);
+        devName.setText(deviceObj.assignedName);
         rssiVal = (TextView)findViewById(R.id.rssiValue);
         String rssi = String.valueOf(deviceObj.rssi);
         initialRssi = deviceObj.rssi;

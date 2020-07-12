@@ -2,7 +2,6 @@ package com.example.getrssi;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,7 +19,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +45,7 @@ public class RegisteredItemsActivity extends AppCompatActivity {
                     for (int i = 0; i < response.length(); i++) {
                         JSONObject obj = response.getJSONObject(i);
                         BTDevice item = new BTDevice();
-                        item.name = obj.getString("deviceName");
+                        item.assignedName = obj.getString("deviceName");
                         item.registeredName = obj.getString("registeredName");
                         itemList.add(item);
                     }

@@ -198,7 +198,7 @@ public class RegisterNewItemActivity extends AppCompatActivity {
                     name = dev.getAddress();
                 }
                 BTDevice device = new BTDevice();
-                device.name = name;
+                device.assignedName = name;
                 device.rssi = rssi;
 
                 if (!deviceList.contains(device)) {
