@@ -23,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Save to Item List"
-            android:textSize="20sp"
+            android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -31,7 +31,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/textview_original_item_name"
+            android:id="@+id/textview_original_item_name_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -40,6 +40,15 @@
             app:layout_constraintStart_toStartOf="@id/edittext_personal_item_name"
             app:layout_constraintTop_toBottomOf="@id/textview_save_item_title" />
 
+        <TextView
+            android:id="@+id/textview_original_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Item Name"
+            android:textSize="18sp"
+            app:layout_constraintLeft_toLeftOf="@id/textview_original_item_name_label"
+            app:layout_constraintStart_toStartOf="@id/textview_original_item_name_label"
+            app:layout_constraintTop_toBottomOf="@id/textview_original_item_name_label" />
 
         <TextView
             android:id="@+id/textview_personal_item_name_label"
@@ -57,9 +66,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="12"
+            android:hint="Enter a name for the item..."
             android:importantForAutofill="no"
             android:inputType="text"
-            android:hint="Enter a name for the item..."
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

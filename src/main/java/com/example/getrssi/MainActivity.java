@@ -1,37 +1,22 @@
 package com.example.getrssi;
 
-import android.Manifest;
-import android.os.Build;
 import android.os.Bundle;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
-
-import com.asus.robotframework.API.RobotAPI;
 import com.asus.robotframework.API.RobotCallback;
 import com.asus.robotframework.API.RobotCmdState;
 import com.asus.robotframework.API.RobotErrorCode;
-import com.asus.robotframework.API.RobotFace;
 import com.robot.asus.robotactivity.RobotActivity;
 
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,7 +103,7 @@ public class MainActivity extends RobotActivity {
         btnItemList.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent itemListIntent = new Intent(getApplicationContext(), RegisteredItemsActivity.class);
+                Intent itemListIntent = new Intent(getApplicationContext(), ItemListActivity.class);
                 startActivity(itemListIntent);
             }
         });

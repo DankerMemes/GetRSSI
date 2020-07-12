@@ -21,6 +21,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,8 +72,9 @@ public class RegisterNewItemActivity extends AppCompatActivity {
                 Bundle args = new Bundle();
                 args.putSerializable("itemObj", (Serializable) selectedItem);
                 dialog.setArguments(args);
+                getFragmentManager();
 
-                dialog.show(getSupportFragmentManager(), "DialogRegisterNew");
+                dialog.show(dialog.getFragmentManager(), "DialogRegisterNew");
 //                Intent intent = new Intent(getApplicationContext(), FindItemActivity.class);
 //                intent.putExtra("deviceObj", (Serializable) selectedDevice);
 //                BTAdapter.cancelDiscovery();
@@ -156,7 +159,7 @@ public class RegisterNewItemActivity extends AppCompatActivity {
             if (!BTAdapter.isDiscovering()){
                 showToast("Making Your Device Discoverable");
                 Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 5);
+                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 15);
                 startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
             }
 
@@ -198,7 +201,7 @@ public class RegisterNewItemActivity extends AppCompatActivity {
                     name = dev.getAddress();
                 }
                 BTDevice device = new BTDevice();
-                device.assignedName = name;
+                device.deviceName = name;
                 device.rssi = rssi;
 
                 if (!deviceList.contains(device)) {

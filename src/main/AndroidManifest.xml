@@ -18,22 +18,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".RegisteredItemsActivity"></activity>
-        <activity android:name=".RegisterNewItemActivity"></activity>
+        <activity android:name=".ItemListActivity" android:parentActivityName=".MainActivity"></activity>
+        <activity android:name=".RegisterNewItemActivity" android:parentActivityName=".MainActivity"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="com.asus.intent.category.ZENBO" />
                 <category android:name="com.asus.intent.category.ZENBO_LAUNCHER" />
                 <category android:name="android.intent.category.LAUNCHER" />
-
                 <data android:name="com.asus.intent.data.MIN_ROBOT_API_LEVEL.1" />
-
                 <action android:name="com.example.getrssi.CANCEL" />
             </intent-filter>
         </activity>
-        <activity android:name=".FindItemActivity"></activity>
+        <activity android:name=".FindItemActivity" android:parentActivityName=".ItemListActivity"></activity>
     </application>
 
 </manifest>
