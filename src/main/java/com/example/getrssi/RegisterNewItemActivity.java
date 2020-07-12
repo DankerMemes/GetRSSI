@@ -74,7 +74,7 @@ public class RegisterNewItemActivity extends AppCompatActivity {
                 dialog.setArguments(args);
                 getFragmentManager();
 
-                dialog.show(dialog.getFragmentManager(), "DialogRegisterNew");
+                dialog.show(getSupportFragmentManager(), "DialogRegisterNew");
 //                Intent intent = new Intent(getApplicationContext(), FindItemActivity.class);
 //                intent.putExtra("deviceObj", (Serializable) selectedDevice);
 //                BTAdapter.cancelDiscovery();
