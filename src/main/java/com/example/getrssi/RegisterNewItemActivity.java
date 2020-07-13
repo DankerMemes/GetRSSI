@@ -1,39 +1,56 @@
 package com.example.getrssi;
 
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.asus.robotframework.API.RobotCallback;
+import com.asus.robotframework.API.RobotCmdState;
+import com.asus.robotframework.API.RobotErrorCode;
 import com.example.getrssi.util.BTDevice;
 import com.example.getrssi.util.DeviceListAdapter;
+import com.example.getrssi.util.HttpUtils;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.robot.asus.robotactivity.RobotActivity;
+
+import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegisterNewItemActivity extends AppCompatActivity {
-    private static final String TAG = "RegisterNewItemActivity";
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
+public class RegisterNewItemActivity extends RobotActivity {
+    private static final String TAG = "RegisterNewItemActivity";
     private static final int REQUEST_ENABLE_BT = 0;
     private static final int REQUEST_DISCOVER_BT = 1;
     private static final int FIND_ITEM_ACTIVITY = 2;
+
+    private final Context context = RegisterNewItemActivity.this;
 
     private BluetoothAdapter BTAdapter;
     private List<BTDevice> deviceList = new ArrayList<>();
@@ -42,6 +59,63 @@ public class RegisterNewItemActivity extends AppCompatActivity {
 
     private boolean isReceiverRegistered = false;
     private boolean isRegisterActivityActive = false;
+
+
+    public static RobotCallback robotCallback = new RobotCallback() {
+        @Override
+        public void onResult(int cmd, int serial, RobotErrorCode err_code, Bundle result) {
+            super.onResult(cmd, serial, err_code, result);;
+        }
+
+        @Override
+        public void onStateChange(int cmd, int serial, RobotErrorCode err_code, RobotCmdState state) {
+            super.onStateChange(cmd, serial, err_code, state);
+        }
+
+        @Override
+        public void initComplete() {
+            super.initComplete();
+        }
+    };
+
+
+    public static RobotCallback.Listen robotListenCallback = new RobotCallback.Listen() {
+        @Override
+        public void onFinishRegister() {
+
+        }
+
+        @Override
+        public void onVoiceDetect(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onSpeakComplete(String s, String s1) {
+
+        }
+
+        @Override
+        public void onEventUserUtterance(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onResult(JSONObject jsonObject) {
+
+        }
+
+        @Override
+        public void onRetry(JSONObject jsonObject) {
+
+        }
+    };
+
+
+    public RegisterNewItemActivity() {
+        super(robotCallback, robotListenCallback);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,17 +143,7 @@ public class RegisterNewItemActivity extends AppCompatActivity {
                 BTDevice selectedItem = (BTDevice) listViewDiscoveredItems.getItemAtPosition(position);
                 Log.d(TAG, "onClick: opening dialog");
 
-                DialogRegisterNew dialog = new DialogRegisterNew();
-                Bundle args = new Bundle();
-                args.putSerializable("itemObj", (Serializable) selectedItem);
-                dialog.setArguments(args);
-                getFragmentManager();
-
-                dialog.show(getSupportFragmentManager(), "DialogRegisterNew");
-//                Intent intent = new Intent(getApplicationContext(), FindItemActivity.class);
-//                intent.putExtra("deviceObj", (Serializable) selectedDevice);
-//                BTAdapter.cancelDiscovery();
-//                startActivityForResult(intent, FIND_ITEM_ACTIVITY);
+                saveItem(selectedItem);
             }
         });
 
@@ -178,6 +242,66 @@ public class RegisterNewItemActivity extends AppCompatActivity {
             }
             BTAdapter.startDiscovery();
         }
+    }
+
+
+    public void saveItem(final BTDevice itemObj) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_register_new, null);
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                RegisterNewItemActivity.this.finish();
+            }
+        });
+
+        TextView textViewOriginalItemName = dialogView.findViewById(R.id.textview_original_item_name);
+        textViewOriginalItemName.setText(itemObj.deviceName);
+
+        final AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+
+        Button btnSaveItem = dialogView.findViewById(R.id.btn_save_item);
+        Button btnCancelSave = dialogView.findViewById(R.id.btn_cancel_save);
+
+        btnSaveItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText editTextPersonalItemName = dialogView.findViewById(R.id.edittext_personal_item_name);
+                itemObj.registeredName = editTextPersonalItemName.getText().toString();
+
+                StringEntity itemEntity = null;
+                try {
+                    itemEntity = new StringEntity(itemObj.toJSON().toString());
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+
+                HttpUtils.post(context, "addItem", itemEntity, "application/json", new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        Log.d(TAG, response.toString());
+                        alertDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                        Log.d(TAG, errorResponse.toString());
+                        alertDialog.dismiss();
+                    }
+                });
+            }
+        });
+
+        btnCancelSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.cancel();
+            }
+        });
     }
 
 

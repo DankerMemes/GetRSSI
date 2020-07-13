@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -313,7 +315,6 @@ public class FindItemActivity extends RobotActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.dialog_add_location, null);
         dialogBuilder.setView(dialogView);
-        dialogBuilder.setCancelable(false);
 
         final AlertDialog alertDialog = dialogBuilder.create();
         alertDialog.show();
@@ -324,8 +325,8 @@ public class FindItemActivity extends RobotActivity {
         btnSaveLocation.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                TextView textViewLocationFound = dialogView.findViewById(R.id.textview_location_found);
-                String locationFound = textViewLocationFound.getText().toString();
+                EditText editTextLocationFound = dialogView.findViewById(R.id.edittext_location_found);
+                String locationFound = editTextLocationFound.getText().toString();
                 Location loc = new Location();
                 loc.name = locationFound;
 

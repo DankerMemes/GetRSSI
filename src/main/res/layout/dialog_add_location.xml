@@ -46,14 +46,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:labelFor="@id/textview_location_found"
+            android:labelFor="@id/edittext_location_found"
             android:text="Location"
-            app:layout_constraintLeft_toLeftOf="@id/textview_location_found"
-            app:layout_constraintStart_toStartOf="@id/textview_location_found"
+            app:layout_constraintLeft_toLeftOf="@id/edittext_location_found"
+            app:layout_constraintStart_toStartOf="@id/edittext_location_found"
             app:layout_constraintTop_toBottomOf="@id/textview_found_item_name" />
 
         <EditText
-            android:id="@+id/textview_location_found"
+            android:id="@+id/edittext_location_found"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="12"
@@ -79,7 +79,7 @@
             android:textColor="#4CAF50"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textview_location_found" />
+            app:layout_constraintTop_toBottomOf="@+id/edittext_location_found" />
 
         <Button
             android:id="@+id/btn_cancel_save"

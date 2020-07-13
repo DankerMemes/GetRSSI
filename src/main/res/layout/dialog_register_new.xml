@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/textview_save_location_title"
+            android:id="@+id/textview_save_item_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Save to Item List"
@@ -36,12 +36,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="Original Item Name"
-            app:layout_constraintLeft_toLeftOf="@id/textview_location_found"
-            app:layout_constraintStart_toStartOf="@id/textview_location_found"
-            app:layout_constraintTop_toBottomOf="@id/textview_save_location_title" />
+            app:layout_constraintLeft_toLeftOf="@id/edittext_personal_item_name"
+            app:layout_constraintStart_toStartOf="@id/edittext_personal_item_name"
+            app:layout_constraintTop_toBottomOf="@id/textview_save_item_title" />
 
         <TextView
-            android:id="@+id/textview_found_item_name"
+            android:id="@+id/textview_original_item_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Item Name"
@@ -51,18 +51,18 @@
             app:layout_constraintTop_toBottomOf="@id/textview_original_item_name_label" />
 
         <TextView
-            android:id="@+id/textview_location_found_label"
+            android:id="@+id/textview_personal_item_name_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:labelFor="@id/textview_location_found"
+            android:labelFor="@id/edittext_location_found"
             android:text="Personal Item Name"
-            app:layout_constraintLeft_toLeftOf="@id/textview_location_found"
-            app:layout_constraintStart_toStartOf="@id/textview_location_found"
-            app:layout_constraintTop_toBottomOf="@id/textview_found_item_name" />
+            app:layout_constraintLeft_toLeftOf="@id/edittext_personal_item_name"
+            app:layout_constraintStart_toStartOf="@id/edittext_personal_item_name"
+            app:layout_constraintTop_toBottomOf="@id/textview_original_item_name" />
 
         <EditText
-            android:id="@+id/textview_location_found"
+            android:id="@+id/edittext_personal_item_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="12"
@@ -73,10 +73,10 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textview_location_found_label" />
+            app:layout_constraintTop_toBottomOf="@+id/textview_personal_item_name_label" />
 
         <Button
-            android:id="@+id/btn_save_location"
+            android:id="@+id/btn_save_item"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="80dp"
@@ -88,7 +88,7 @@
             android:textColor="#4CAF50"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textview_location_found" />
+            app:layout_constraintTop_toBottomOf="@+id/edittext_personal_item_name" />
 
         <Button
             android:id="@+id/btn_cancel_save"
@@ -97,7 +97,7 @@
             android:background="@null"
             android:text="Cancel"
             android:textColor="#F44336"
-            app:layout_constraintBottom_toBottomOf="@+id/btn_save_location"
+            app:layout_constraintBaseline_toBaselineOf="@+id/btn_save_item"
             app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
