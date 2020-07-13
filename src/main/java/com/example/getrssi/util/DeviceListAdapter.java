@@ -1,4 +1,4 @@
-package com.example.getrssi;
+package com.example.getrssi.util;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,9 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
+import com.example.getrssi.R;
+import com.example.getrssi.util.BTDevice;
 
 import java.util.List;
 

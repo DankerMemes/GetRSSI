@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.getrssi.util.BTDevice;
 import com.example.getrssi.util.HttpUtils;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -58,7 +59,7 @@ public class DialogRegisterNew extends DialogFragment {
 
                 StringEntity itemEntity = null;
                 try {
-                    itemEntity = new StringEntity(item.toJson().toString());
+                    itemEntity = new StringEntity(item.toJSON().toString());
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }

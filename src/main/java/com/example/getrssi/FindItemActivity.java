@@ -24,15 +24,11 @@ import com.asus.robotframework.API.RobotCallback;
 import com.asus.robotframework.API.RobotCmdState;
 import com.asus.robotframework.API.RobotErrorCode;
 import com.asus.robotframework.API.RobotFace;
-import com.example.getrssi.util.HttpUtils;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
+import com.example.getrssi.util.BTDevice;
+import com.example.getrssi.util.Location;
 import com.robot.asus.robotactivity.RobotActivity;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import cz.msebera.android.httpclient.Header;
 
 public class FindItemActivity extends RobotActivity {
     private static final String TAG = "FindItemActivity";
@@ -40,7 +36,7 @@ public class FindItemActivity extends RobotActivity {
 
     private ProgressBar progressBarSpinner;
     private Button btnCancel, btnFindItem;
-    private TextView textViewDeviceName, textViewRSSIValue, textViewLastLocation;
+    private TextView textViewRegisteredName, textViewDeviceName, textViewRSSIValue, textViewLastLocation;
     private BluetoothAdapter BTAdapter;
 
     private boolean discoveryStartedFlag = false, isReceiverRegistered = false;;
@@ -112,16 +108,23 @@ public class FindItemActivity extends RobotActivity {
 
         Intent intent = getIntent();
         deviceObj = (BTDevice)intent.getSerializableExtra("deviceObj");
+        selectedDevName = deviceObj.deviceName;;
 
-        progressBarSpinner = (ProgressBar) findViewById(R.id.progress_find_item);
-        selectedDevName = deviceObj.registeredName != null ? deviceObj.registeredName : deviceObj.deviceName;
-        textViewDeviceName = findViewById(R.id.textview_device_name);
-        textViewDeviceName.setText(selectedDevName);
-        textViewRSSIValue = findViewById(R.id.textview_rssi_value);
-        String rssi = String.valueOf(deviceObj.rssi);
         initialRSSI = deviceObj.rssi;
         previousStrength = initialRSSI;
+
+        textViewRegisteredName = findViewById(R.id.textview_item_registered_name);
+        textViewRegisteredName.setText(deviceObj.registeredName);
+        textViewDeviceName = findViewById(R.id.textview_item_device_name);
+        textViewDeviceName.setText(deviceObj.deviceName);
+        textViewRSSIValue = findViewById(R.id.textview_rssi_value);
+        String rssi = String.valueOf(deviceObj.rssi);
         textViewRSSIValue.setText(rssi + " DBM");
+        textViewLastLocation = findViewById(R.id.textview_last_location);
+        Location lastLocation = deviceObj.getLastLocation();
+        if (lastLocation != null) textViewLastLocation.setText(lastLocation.name);
+
+        progressBarSpinner = (ProgressBar) findViewById(R.id.progress_find_item);
 
         btnCancel = findViewById(R.id.btn_cancel);
         btnCancel.setOnClickListener(new OnClickListener(){
@@ -144,21 +147,6 @@ public class FindItemActivity extends RobotActivity {
                 robotAPI.robot.speak("zenbo will follow you and attempt to detect this device");
 //                followCommandSerialNumber = robotAPI.utility.followUser();
                 scanDevices();
-            }
-        });
-
-        // Get last location
-        HttpUtils.get(String.format("%d/getLastLocation", deviceObj.id),  new RequestParams(), new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                Log.d(TAG, response.toString());
-                super.onSuccess(statusCode, headers, response);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.d(TAG, errorResponse.toString());
-                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -202,15 +190,11 @@ public class FindItemActivity extends RobotActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void checkBTPermissions() {
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
-            int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
-            permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
-            if (permissionCheck != 0) {
+        int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
+        permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
+        if (permissionCheck != 0) {
 
-                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number
-            }
-        }else{
-            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number
         }
     }
 
@@ -285,7 +269,6 @@ public class FindItemActivity extends RobotActivity {
                         previousStrength = updatedRSSI;
 //                        scanDevices();
                         BTAdapter.cancelDiscovery();
-                        Log.d("YoDawg", Integer.toString(BTAdapter.getState()));
                         BTAdapter.startDiscovery();
                     } else {
                         robotAPI.robot.speak("in 1m range");
