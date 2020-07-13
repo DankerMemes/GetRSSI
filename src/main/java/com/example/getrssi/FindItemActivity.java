@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
@@ -51,10 +50,10 @@ public class FindItemActivity extends RobotActivity {
     private TextView textViewRegisteredName, textViewDeviceName, textViewRSSIValue, textViewLastLocation;
     private BluetoothAdapter BTAdapter;
 
-    private boolean discoveryStartedFlag = false, isReceiverRegistered = false;;
+    private boolean itemDiscoveredFlag = false, isReceiverRegistered = false;;
     private int initialRSSI, previousStrength, followCommandSerialNumber;
     private String selectedDevName;
-    private BTDevice deviceObj;
+    private BTDevice itemObj;
 
     public static RobotCallback robotCallback = new RobotCallback() {
         @Override
@@ -119,21 +118,21 @@ public class FindItemActivity extends RobotActivity {
         BTAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Intent intent = getIntent();
-        deviceObj = (BTDevice)intent.getSerializableExtra("deviceObj");
-        selectedDevName = deviceObj.deviceName;
+        itemObj = (BTDevice)intent.getSerializableExtra("deviceObj");
+        selectedDevName = itemObj.deviceName;
 
-        initialRSSI = deviceObj.rssi;
+        initialRSSI = itemObj.rssi;
         previousStrength = initialRSSI;
 
         textViewRegisteredName = findViewById(R.id.textview_item_registered_name);
-        textViewRegisteredName.setText(deviceObj.registeredName);
+        textViewRegisteredName.setText(itemObj.registeredName);
         textViewDeviceName = findViewById(R.id.textview_item_device_name);
-        textViewDeviceName.setText(deviceObj.deviceName);
+        textViewDeviceName.setText(itemObj.deviceName);
         textViewRSSIValue = findViewById(R.id.textview_rssi_value);
-        String rssi = String.valueOf(deviceObj.rssi);
+        String rssi = String.valueOf(itemObj.rssi);
         textViewRSSIValue.setText(rssi + " DBM");
         textViewLastLocation = findViewById(R.id.textview_last_location);
-        Location lastLocation = deviceObj.getLastLocation();
+        Location lastLocation = itemObj.getLastLocation();
         if (lastLocation != null) textViewLastLocation.setText(lastLocation.name);
 
         progressBarSpinner = (ProgressBar) findViewById(R.id.progress_find_item);
@@ -156,7 +155,9 @@ public class FindItemActivity extends RobotActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Finding Item");
-                robotAPI.robot.speak("zenbo will follow you and attempt to detect this device");
+
+                String tts = "Okay I'm looking for it now. I'll tell you when I'm close.";
+                robotAPI.robot.speak(tts);
 //                followCommandSerialNumber = robotAPI.utility.followUser();
                 scanDevices();
             }
@@ -189,11 +190,8 @@ public class FindItemActivity extends RobotActivity {
             case REQUEST_DISCOVER_BT:
                 if (resultCode == RESULT_OK) {
                     showToast("Scan started");
-                    discoveryStartedFlag = true;
                 }
                 else {
-                    // User declined to turn on Bluetooth
-                    showToast("Could not start scan");
                 }
                 break;
         }
@@ -215,16 +213,13 @@ public class FindItemActivity extends RobotActivity {
     }
 
     public void scanDevices(){
-        // Make device discoverable
-        if (!BTAdapter.isDiscovering()) {
-            showToast("Making Your Device Discoverable");
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            if (!discoveryStartedFlag) {
-                startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
-            }
-//            discoveryStatus = 1;
-        }
+//        // Make device discoverable
+//        if (!BTAdapter.isDiscovering()) {
+//            showToast("Making Your Device Discoverable");
+//            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+//            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+//            startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
+//        }
 
         if (!isReceiverRegistered) {
             IntentFilter filter = new IntentFilter();
@@ -233,6 +228,10 @@ public class FindItemActivity extends RobotActivity {
             filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
             registerReceiver(receiver, filter);
             isReceiverRegistered = true;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                checkBTPermissions();
+            }
         }
         progressBarSpinner.setVisibility(View.VISIBLE);
         BTAdapter.startDiscovery();
@@ -246,6 +245,9 @@ public class FindItemActivity extends RobotActivity {
                 Log.d(TAG, "Discovery started");
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(TAG, "Discovery finished");
+                if (!itemDiscoveredFlag) {
+                    BTAdapter.startDiscovery();
+                }
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
                 int updatedRSSI = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
@@ -280,13 +282,20 @@ public class FindItemActivity extends RobotActivity {
                         }
                         previousStrength = updatedRSSI;
 //                        scanDevices();
-                        BTAdapter.cancelDiscovery();
-                        BTAdapter.startDiscovery();
+//                        BTAdapter.cancelDiscovery();
+//                        BTAdapter.startDiscovery();
                     } else {
-                        robotAPI.robot.speak("in 1m range");
-                        progressBarSpinner.setVisibility(View.INVISIBLE);
+                        // Stop moving
                         robotAPI.cancelCommandAll();
                         robotAPI.motion.stopMoving();
+
+                        // Trigger flag
+                        itemDiscoveredFlag = true;
+
+                        // TTS response and prompt user to save location
+                        String ttsResponse = String.format("Your %s is in 1m range. Enter the location where you found it and press save.", itemObj.registeredName);
+                        robotAPI.robot.speak(ttsResponse);
+                        progressBarSpinner.setVisibility(View.INVISIBLE);
                         BTAdapter.cancelDiscovery();
                         saveLocation();
                     }
@@ -327,12 +336,15 @@ public class FindItemActivity extends RobotActivity {
                     e.printStackTrace();
                 }
 
-                String postUrl = String.format("%d/addLocation", deviceObj.id);
+                String postUrl = String.format("%d/addLocation", itemObj.id);
 
                 HttpUtils.post(context, postUrl, locationEntity, "application/json", new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         Log.d(TAG, response.toString());
+
+                        String ttsResponse = "Okay, I'll remember this is where I last found the item for you.";
+                        robotAPI.robot.speak(ttsResponse);
                         alertDialog.dismiss();
                     }
 

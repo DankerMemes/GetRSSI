@@ -93,6 +93,14 @@ public class ItemListActivity extends RobotActivity {
                         itemList.add(item);
                     }
                     progressItemList.setVisibility(View.GONE);
+
+                    String ttsResponse;
+                    if (itemList.size() != 0) {
+                        ttsResponse = "These are all of the items I have saved. Select one of them to begin searching for it.";
+                    } else {
+                        ttsResponse = "It looks like you have not registered any items yet. You should register an item before trying to search for it.";
+                    }
+                    robotAPI.robot.speak(ttsResponse);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

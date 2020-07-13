@@ -156,13 +156,13 @@ public class RegisterNewItemActivity extends AppCompatActivity {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         } else {
-            // Make device discoverable
-            if (!BTAdapter.isDiscovering()){
-                showToast("Making Your Device Discoverable");
-                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 15);
-                startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
-            }
+//            // Make device discoverable
+//            if (!BTAdapter.isDiscovering()){
+//                showToast("Making Your Device Discoverable");
+//                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+//                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 15);
+//                startActivityForResult(discoverableIntent, REQUEST_DISCOVER_BT);
+//            }
 
             if (!isReceiverRegistered) {
                 IntentFilter filter = new IntentFilter();

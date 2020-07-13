@@ -137,6 +137,9 @@ public class MainActivity extends RobotActivity {
         // Jump to dialog domain plan
         // Dunno if this works
         robotAPI.robot.jumpToPlan(DOMAIN, PLAN);
+
+        String tts = "Hi I'm Zenbo. I can help you find what you are looking for.";
+        robotAPI.robot.speak(tts);
     }
 
     public void getItems() {
