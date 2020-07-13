@@ -28,7 +28,9 @@ public class Location implements Serializable {
         JSONObject locationObj = new JSONObject();
 
         try {
-            locationObj.put("id", this.id);
+            if (this.id > 0) {
+                locationObj.put("id", this.id);
+            }
             locationObj.put("name", this.name);
         } catch (JSONException e) {
             e.printStackTrace();

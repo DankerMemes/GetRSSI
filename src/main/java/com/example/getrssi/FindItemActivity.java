@@ -1,15 +1,18 @@
 package com.example.getrssi;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -25,14 +28,23 @@ import com.asus.robotframework.API.RobotCmdState;
 import com.asus.robotframework.API.RobotErrorCode;
 import com.asus.robotframework.API.RobotFace;
 import com.example.getrssi.util.BTDevice;
+import com.example.getrssi.util.HttpUtils;
 import com.example.getrssi.util.Location;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.robot.asus.robotactivity.RobotActivity;
 
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
+
 public class FindItemActivity extends RobotActivity {
     private static final String TAG = "FindItemActivity";
     private static final int REQUEST_DISCOVER_BT = 1;
+
+    private final Context context = this;
 
     private ProgressBar progressBarSpinner;
     private Button btnCancel, btnFindItem;
@@ -108,7 +120,7 @@ public class FindItemActivity extends RobotActivity {
 
         Intent intent = getIntent();
         deviceObj = (BTDevice)intent.getSerializableExtra("deviceObj");
-        selectedDevName = deviceObj.deviceName;;
+        selectedDevName = deviceObj.deviceName;
 
         initialRSSI = deviceObj.rssi;
         previousStrength = initialRSSI;
@@ -276,6 +288,7 @@ public class FindItemActivity extends RobotActivity {
                         robotAPI.cancelCommandAll();
                         robotAPI.motion.stopMoving();
                         BTAdapter.cancelDiscovery();
+                        saveLocation();
                     }
                 }
 
@@ -283,4 +296,60 @@ public class FindItemActivity extends RobotActivity {
 //        }
         }
     };
+
+
+    public void saveLocation() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_add_location, null);
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.setCancelable(false);
+
+        final AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+
+        Button btnSaveLocation = dialogView.findViewById(R.id.btn_save_location);
+        Button btnCancelSaveLocation = dialogView.findViewById(R.id.btn_cancel_save);
+
+        btnSaveLocation.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TextView textViewLocationFound = dialogView.findViewById(R.id.textview_location_found);
+                String locationFound = textViewLocationFound.getText().toString();
+                Location loc = new Location();
+                loc.name = locationFound;
+
+                StringEntity locationEntity = null;
+                try {
+                    locationEntity = new StringEntity(loc.toJSON().toString());
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+
+                String postUrl = String.format("%d/addLocation", deviceObj.id);
+
+                HttpUtils.post(context, postUrl, locationEntity, "application/json", new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        Log.d(TAG, response.toString());
+                        alertDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                        Log.d(TAG, errorResponse.toString());
+                        alertDialog.dismiss();
+                    }
+                });
+            }
+        });
+
+        btnCancelSaveLocation.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.cancel();
+            }
+        });
+    }
 }

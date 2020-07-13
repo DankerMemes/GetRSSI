@@ -39,11 +39,11 @@ public class DialogRegisterNew extends DialogFragment {
         final BTDevice item = (BTDevice) getArguments().getSerializable("itemObj");
         Log.d(TAG, item.deviceName + item.rssi);
 
-        textViewDeviceName = view.findViewById(R.id.textview_original_item_name);
+        textViewDeviceName = view.findViewById(R.id.textview_found_item_name);
         textViewDeviceName.setText(item.deviceName);
-        editTextRegisteredName = view.findViewById(R.id.edittext_personal_item_name);
+        editTextRegisteredName = view.findViewById(R.id.textview_location_found);
 
-        btnSaveItem = view.findViewById(R.id.btn_save_item);
+        btnSaveItem = view.findViewById(R.id.btn_save_location);
         btnCancel = view.findViewById(R.id.btn_cancel_save);
 
         btnSaveItem.setOnClickListener(new View.OnClickListener() {

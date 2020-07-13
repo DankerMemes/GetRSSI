@@ -172,10 +172,10 @@ public class MainActivity extends RobotActivity {
 
     public static void checkForItem(String userRequest) {
         // TODO: parse user request for requested item
-        String requestedItemName = "TestItem";
+        String requestedItemName = "TestItem".toLowerCase();
 
         for (BTDevice item : itemList) {
-            if (requestedItemName.equals(item.registeredName)) {
+            if (requestedItemName.equals(item.registeredName.toLowerCase())) {
                 Log.d(TAG, "Item found");
 
                 String ttsResponse = String.format("%s was last found at %s.", item.registeredName, item.getLastLocation().name);
